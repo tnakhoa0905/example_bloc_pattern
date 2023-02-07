@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:example_bloc_pattern/bloc/addtodo_bloc.dart';
+import 'package:example_bloc_pattern/model/todo.dart';
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -41,26 +43,35 @@ class _HomeScreen extends State<HomeScreen> {
                   'Công việc cần làm',
                   textAlign: TextAlign.center,
                 )),
-            body: StreamBuilder<List<String>>(
-              stream: addTodoBloc.listStream,
+            body: StreamBuilder(
+              stream: addTodoBloc.readAllTodo(),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
                   return Text('error ${snapshot.error}');
                 }
                 if (!snapshot.hasData) {
-                  print(snapshot);
                   return const Center(
                     child: Text('Không có công việc nào'),
                   );
                 }
-                print(snapshot);
-                List<String>? listTodo = snapshot.data;
+                List<Todo> todos = snapshot.data!.docs
+                    .map((e) => Todo.fromJson(e.data() as Map<String, dynamic>))
+                    .toList();
                 return ListView.builder(
                     shrinkWrap: true,
-                    itemCount: listTodo!.length,
+                    itemCount: todos.length,
                     itemBuilder: ((context, index) => ListTile(
+                          trailing: Column(children: [
+                            IconButton(
+                                onPressed: () {
+                                  addTodoBloc.finishTodo(todos[index].id);
+                                },
+                                icon: Icon(todos[index].is_finish == false
+                                    ? Icons.check
+                                    : Icons.ac_unit_outlined))
+                          ]),
                           title: Text(
-                            '${listTodo[index]}',
+                            todos[index].content,
                             textAlign: TextAlign.center,
                           ),
                         )));
@@ -80,7 +91,11 @@ class _HomeScreen extends State<HomeScreen> {
             actions: [
               TextButton(
                   onPressed: () {
-                    addTodoBloc.addTodoList(_todoController.text);
+                    addTodoBloc.addTodo(Todo(
+                        id: '',
+                        content: _todoController.text,
+                        is_finish: false,
+                        current_date: DateTime.now()));
                     Navigator.of(context).pop();
                     _todoController.clear();
                   },
