@@ -49,7 +49,7 @@ class _HomeScreen extends State<HomeScreen> {
                 if (snapshot.hasError) {
                   return Text('error ${snapshot.error}');
                 }
-                if (!snapshot.hasData) {
+                if (!snapshot.hasData || snapshot.data!.size == 0) {
                   return const Center(
                     child: Text('Không có công việc nào'),
                   );
@@ -61,6 +61,12 @@ class _HomeScreen extends State<HomeScreen> {
                     shrinkWrap: true,
                     itemCount: todos.length,
                     itemBuilder: ((context, index) => ListTile(
+                          leading: IconButton(
+                            onPressed: () {
+                              addTodoBloc.deleteTodo(todos[index].id);
+                            },
+                            icon: Icon(Icons.delete),
+                          ),
                           trailing: Column(children: [
                             IconButton(
                                 onPressed: () {
@@ -68,7 +74,7 @@ class _HomeScreen extends State<HomeScreen> {
                                 },
                                 icon: Icon(todos[index].is_finish == false
                                     ? Icons.check
-                                    : Icons.ac_unit_outlined))
+                                    : Icons.ac_unit_outlined)),
                           ]),
                           title: Text(
                             todos[index].content,

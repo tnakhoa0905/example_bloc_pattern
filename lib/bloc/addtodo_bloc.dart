@@ -9,6 +9,7 @@ class AddTodoBloc {
       StreamController<List<String>>();
 
   Stream<List<String>> get listTodoStream => _streamListTodo.stream;
+  final docTodo = FirebaseFirestore.instance.collection('todo');
 
   Stream<QuerySnapshot> readAllTodo() {
     final todoSnapshot = FirebaseFirestore.instance
@@ -33,11 +34,18 @@ class AddTodoBloc {
   }
 
   Future<void> finishTodo(String todoId) {
-    final docTodo = FirebaseFirestore.instance.collection('todo');
     return docTodo
         .doc(todoId)
         .update({'is_finish': true})
         .then((value) => print('todo updated'))
+        .catchError((e) => print(e));
+  }
+
+  Future<void> deleteTodo(String todoId) {
+    return docTodo
+        .doc(todoId)
+        .delete()
+        .then((value) => print('Todo Delete'))
         .catchError((e) => print(e));
   }
 
