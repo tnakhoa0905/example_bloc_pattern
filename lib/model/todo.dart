@@ -22,9 +22,9 @@ class Todo {
 
   factory Todo.fromJson(Map<String, dynamic> map) {
     return Todo(
-        id: map['id'] as String,
-        content: map['content'] as String,
-        is_finish: map['is_finish'] as bool,
+        id: map['id']??'',
+        content: map['content']??'',
+        is_finish: map['is_finish']??false,
         current_date: map['current_date'].toDate());
   }
 }

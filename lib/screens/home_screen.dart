@@ -43,20 +43,20 @@ class _HomeScreen extends State<HomeScreen> {
                   'Công việc cần làm',
                   textAlign: TextAlign.center,
                 )),
-            body: StreamBuilder(
-              stream: addTodoBloc.readAllTodo(),
+            body: StreamBuilder<List<Todo>>(
+              stream: addTodoBloc.listTodoStream,
               builder: (context, snapshot) {
+                print('**********'*30);
+                print('rebuild');
                 if (snapshot.hasError) {
                   return Text('error ${snapshot.error}');
                 }
-                if (!snapshot.hasData || snapshot.data!.size == 0) {
+                if (!snapshot.hasData || snapshot.data!.isEmpty) {
                   return const Center(
                     child: Text('Không có công việc nào'),
                   );
                 }
-                List<Todo> todos = snapshot.data!.docs
-                    .map((e) => Todo.fromJson(e.data() as Map<String, dynamic>))
-                    .toList();
+                List<Todo> todos = snapshot.data??[];
                 return ListView.builder(
                     shrinkWrap: true,
                     itemCount: todos.length,
