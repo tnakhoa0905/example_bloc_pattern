@@ -6,32 +6,36 @@ import 'package:flutter/material.dart';
 import '../model/todo.dart';
 
 class AddTodoBloc with WidgetsBindingObserver {
-  late final StreamSubscription<List<Todo>> _totoListener;
-  AddTodoBloc(){
-    WidgetsBinding.instance.addObserver(this);
-    _totoListener = readAllTodo().listen((event) {
-      print('**********'*30);
-                print('rebuild');
-      _streamListTodo.add( event);
-      
-    });
-  }
+  // late final StreamSubscription<List<Todo>> _totoListener;
+  // AddTodoBloc() {
+  //   WidgetsBinding.instance.addObserver(this);
+  //   _totoListener = readAllTodo().listen((event) {
+  //     print('**********' * 30);
+  //     print('rebuild');
+  //     _streamListTodo.add(event);
+  //   });
+  // }
+
   final StreamController<List<Todo>> _streamListTodo =
       StreamController<List<Todo>>();
 
   Stream<List<Todo>> get listTodoStream => _streamListTodo.stream;
+
   final docTodo = FirebaseFirestore.instance.collection('todo');
 
   Stream<List<Todo>> readAllTodo() {
+    List<Todo> todoss = [];
+    _streamListTodo.sink.add(todoss);
     final todoSnapshot = FirebaseFirestore.instance
         .collection('todo')
         .orderBy('current_date', descending: true)
         .snapshots();
+    var result = todoSnapshot.map(
+        (event) => event.docs.map((e) => Todo.fromJson(e.data())).toList());
+    _streamListTodo.addStream(result);
     return todoSnapshot.map(
         (event) => event.docs.map((e) => Todo.fromJson(e.data())).toList());
   }
-
-
 
   Future<void> addTodo(Todo content) async {
     final docTodo = FirebaseFirestore.instance.collection('todo').doc();
@@ -58,27 +62,27 @@ class AddTodoBloc with WidgetsBindingObserver {
         .catchError((e) => print(e));
   }
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) async {
-    switch (state) {
-      case AppLifecycleState.resumed:
-      print('resumed');
-      _totoListener.resume();
-        break;
-      case AppLifecycleState.inactive:
-        break;
-      case AppLifecycleState.paused:
-      print('pause');
-      _totoListener.pause();
-        break;
-      case AppLifecycleState.detached:
-        break;
-    }
-  }
+  // @override
+  // void didChangeAppLifecycleState(AppLifecycleState state) async {
+  //   switch (state) {
+  //     case AppLifecycleState.resumed:
+  //       print('resumed');
+  //       _totoListener.resume();
+  //       break;
+  //     case AppLifecycleState.inactive:
+  //       break;
+  //     case AppLifecycleState.paused:
+  //       print('pause');
+  //       _totoListener.pause();
+  //       break;
+  //     case AppLifecycleState.detached:
+  //       break;
+  //   }
+  // }
 
   void dispose() {
-    _totoListener.pause();
-    _totoListener.cancel();
+    // _totoListener.pause();
+    // _totoListener.cancel();
     _streamListTodo.close();
     WidgetsBinding.instance.removeObserver(this);
   }
